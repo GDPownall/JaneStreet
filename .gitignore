@@ -1,2 +1,4 @@
 input/*.csv
 output*
+*.pyc
+*pycache*
