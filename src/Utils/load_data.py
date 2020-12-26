@@ -11,6 +11,20 @@ def create_inout_sequences(input_vector, seq_len):
     #print(out_seq)
     return out_seq
 
+def split_sequences(sequences, n_steps):
+    X, y = list(), list()
+    for i in range(len(sequences)):
+        # find the end of this pattern
+        end_ix = i + n_steps
+        # check if we are beyond the dataset
+        if end_ix > len(sequences):
+            break
+        # gather input and output parts of the pattern
+        seq_x, seq_y = sequences[i:end_ix, :-1], sequences[end_ix-1, -1]
+        X.append(seq_x)
+        y.append(seq_y)
+    return np.array(X), np.array(y)
+
 class Data:
     def __init__(self, short=True):
         if short: self.df = df = dt.fread('input/train.csv',max_nrows=50).to_pandas()
@@ -24,7 +38,24 @@ class Data:
     def features_as_np(self):
         return [self.df[x].values.astype(float) for x in self.df.columns if 'feature' in x]
 
+    def split_sequences(self, seq_len):
+        newdf = self.df[[x for x in self.df.columns if 'feature' in x] + ['resp']]
+        vals = newdf.values.astype(float)
+        return split_sequences(vals, seq_len)
+
     def train_test(self, train_frac = 0.7, seq_len=5):
+        sequences = self.split_sequences(seq_len)
+        train_n = int(train_frac*len(self.df))
+        test_n  = len(self.df) - train_n
+
+        train_x = sequences[0][:train_n]
+        train_y = sequences[1][:train_n]
+        test_x  = sequences[0][train_n:]
+        test_y  = sequences[1][train_n:]
+
+        return train_x, train_y, test_x, test_y
+
+    def train_test_old(self, train_frac = 0.7, seq_len=5):
         x = self.features_as_np()
         y = self.df.resp
         train_n = int(train_frac*len(self.df))
@@ -45,6 +76,13 @@ class Data:
         
 
 if __name__ == '__main__':
+    x = Data()
+    print(x.split_sequences())
+    arr = np.array(range(50))
+    arr = arr.reshape(5,10)
+    print(arr)
+    print(split_sequences(arr,3))
+    exit(1)
     x = Data()
     print(x.df)
     #print('===============')
