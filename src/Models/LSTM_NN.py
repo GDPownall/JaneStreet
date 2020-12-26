@@ -71,10 +71,8 @@ def train():
 def plot_predictions(model):
     train_x, train_y, test_x, test_y = data.train_test()
     y_pred = []
-    for x in train_x:
-        print(x)
-        model.reset_hidden_cell()
-        y_pred.append(model(torch.FloatTensor(x)))
+    model.reset_hidden_cell(torch.FloatTensor(test_x).size(0))
+    y_pred = model(torch.FloatTensor(test_x))
     y_full = np.concatenate([train_y,test_y])
     horizontal = range(len(y_full))
     horizontal_pred = range(len(train_y),len(y_full))
@@ -82,8 +80,8 @@ def plot_predictions(model):
     plt.plot(horizontal,y_full)
     print(horizontal_pred)
     print(y_pred)
-    plt.plot(horizontal_pred, y_pred)
+    plt.plot(horizontal_pred, y_pred.detach().numpy())
     plt.show()
 
 model = train()
-#plot_predictions(model)
+plot_predictions(model)
