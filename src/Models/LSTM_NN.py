@@ -6,12 +6,11 @@ import torch
 import matplotlib.pyplot as plt
 import numpy as np
 
-data = Data()
-
 class LSTM(nn.Module):
-    def __init__(self):
+    def __init__(self, data = None):
         super().__init__()
         ## Sizes of various things
+        self.data = data
         self.hidden_layer_size = 100 # number of hidden states
         n_features = data.n_features()
         output_size = 1
@@ -40,8 +39,7 @@ class LSTM(nn.Module):
         return self.linear(x)
 
 
-def train():
-    model = LSTM()
+def train(model):
     model.train()
     loss_function = nn.MSELoss()
     optimiser = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -50,7 +48,7 @@ def train():
     
     epochs = 10
     batch_size = 10
-    train_x, train_y, test_x, test_y = data.train_test()
+    train_x, train_y, test_x, test_y = model.data.train_test()
 
     for i in range(epochs):
         for b in range(0,len(train_x),batch_size):
@@ -66,10 +64,8 @@ def train():
 
         print(f'epoch: {i:3} loss: {single_loss.item():10.10f}')
 
-    return model
-
 def plot_predictions(model):
-    train_x, train_y, test_x, test_y = data.train_test()
+    train_x, train_y, test_x, test_y = model.data.train_test()
     y_pred = []
     model.reset_hidden_cell(torch.FloatTensor(test_x).size(0))
     y_pred = model(torch.FloatTensor(test_x))
@@ -83,5 +79,8 @@ def plot_predictions(model):
     plt.plot(horizontal_pred, y_pred.detach().numpy())
     plt.show()
 
-model = train()
-plot_predictions(model)
+if __name__ == '__main__':
+    data = Data()
+    model = LSTM(data)
+    train(model)
+    plot_predictions(model)

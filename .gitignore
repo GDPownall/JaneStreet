@@ -2,3 +2,4 @@ input/*.csv
 output*
 *.pyc
 *pycache*
+model

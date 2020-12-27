@@ -26,9 +26,9 @@ def split_sequences(sequences, n_steps):
     return np.array(X), np.array(y)
 
 class Data:
-    def __init__(self, short=True):
-        if short: self.df = df = dt.fread('input/train.csv',max_nrows=50).to_pandas()
-        else: self.df = dt.fread('input/train.csv').to_pandas()
+    def __init__(self, short=False,path='input/train.csv'):
+        if short: self.df = df = dt.fread(path,max_nrows=50).to_pandas()
+        else: self.df = dt.fread(path).to_pandas()
         self.df.drop(['feature_'+str(i) for i in range(2,130)]+['resp_'+str(i) for i in range(1,5)],axis=1, inplace=True)
 
     def n_features(self):
