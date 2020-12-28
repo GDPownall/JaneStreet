@@ -58,7 +58,7 @@ def train(model):
             model.reset_hidden_cell(torch.FloatTensor(x).size(0))
             y_pred = model(torch.FloatTensor(x))
 
-            single_loss = loss_function(y_pred, torch.FloatTensor([y]))
+            single_loss = loss_function(y_pred, torch.FloatTensor([y]).T)
             single_loss.backward()
             optimiser.step()
 
