@@ -27,10 +27,16 @@ def split_sequences(sequences, n_steps):
 
 class Data:
     def __init__(self, short=False,path='input/train.csv'):
+        '''
+        Class for loading the data for this competition.
+        Arguments:
+            short: reduce the size of the data for testing purposes. Removes most of the rows and most of the features.
+            path:  path to input csv file.
+        '''
         if short: self.df = df = dt.fread(path,max_nrows=50).to_pandas()
         else: self.df = dt.fread(path).to_pandas()
-        print(self.df.columns)
-        self.df.drop(['feature_'+str(i) for i in range(2,130)]+['resp_'+str(i) for i in range(1,5)],axis=1, inplace=True)
+        #print(self.df.columns)
+        if short: self.df.drop(['feature_'+str(i) for i in range(2,130)]+['resp_'+str(i) for i in range(1,5)],axis=1, inplace=True)
 
     def n_features(self):
         features = [x for x in self.df.columns if 'feature' in x]
