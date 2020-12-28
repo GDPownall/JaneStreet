@@ -48,7 +48,7 @@ def train(model):
     
     epochs = 10
     batch_size = 10
-    train_x, train_y, test_x, test_y = model.data.train_test()
+    train_x, train_y, _, _ = model.data.train_test()
 
     for i in range(epochs):
         for b in range(0,len(train_x),batch_size):
