@@ -43,22 +43,25 @@ class Data:
         return len(features)
 
     def features_as_np(self):
-        return [self.df[x].values.astype(float) for x in self.df.columns if 'feature' in x]
+        return np.array([self.df[x].values.astype(float) for x in self.df.columns if 'feature' in x])
 
     def split_sequences(self, seq_len):
+        raise RuntimeError('Obsolete function. Splitting the entire dataframe rather than just a batch is very wasteful of RAM.')
         newdf = self.df[[x for x in self.df.columns if 'feature' in x] + ['resp']]
         vals = newdf.values.astype(float)
         return split_sequences(vals, seq_len)
 
     def train_test(self, train_frac = 0.7, seq_len=5):
-        sequences = self.split_sequences(seq_len)
         train_n = int(train_frac*len(self.df))
         test_n  = len(self.df) - train_n
 
-        train_x = sequences[0][:train_n]
-        train_y = sequences[1][:train_n]
-        test_x  = sequences[0][train_n:]
-        test_y  = sequences[1][train_n:]
+        features = self.features_as_np()
+        y = self.df['resp'].values.astype(float)
+
+        train_x = features[:train_n,:]
+        train_y = y[:train_n]
+        test_x  = features[train_n:,:]
+        test_y  = y[train_n:]
 
         return train_x, train_y, test_x, test_y
 
