@@ -46,11 +46,16 @@ def train(model):
 
     print(model)
 
+    ## Add on rows of zeros at start
+    to_add = np.zeros((n_steps-1, model.data.train_x[0].size))
+    model.data.train_x[0] = np.vstack((to_add,model.data.train_x[0]))
+
     epochs = 10
     batch_size = 30
 
     for i in range(epochs):
         for b in range(0,len(model.data.train_x),batch_size):
+            print(b/batch_size)
             x = split_sequences(model.data.train_x,model.seq_len,[b,b+batch_size])
             y = model.data.train_y[b:b+batch_size]
             optimiser.zero_grad()

@@ -4,8 +4,8 @@ import numpy as np
 def split_sequences(sequences, n_steps, limits = None):
     X = list()
     ## Add on rows of zeros at start
-    to_add = np.zeros((n_steps-1, sequences[0].size))
-    sequences = np.vstack((to_add,sequences))
+    #to_add = np.zeros((n_steps-1, sequences[0].size))
+    #sequences = np.vstack((to_add,sequences))
 
     for i in range(len(sequences)):
         if limits == None: pass
