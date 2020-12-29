@@ -55,7 +55,7 @@ def train(model):
 
     for i in range(epochs):
         for b in range(0,len(model.data.train_x),batch_size):
-            print(b/len(model.data.train_x))
+            #print(b/len(model.data.train_x))
             x = split_sequences(model.data.train_x,model.seq_len,[b,b+batch_size])
             y = model.data.train_y[b:b+batch_size]
             optimiser.zero_grad()
