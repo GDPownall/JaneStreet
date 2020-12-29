@@ -50,6 +50,11 @@ def train(model):
     to_add = np.zeros((model.seq_len-1, model.data.train_x[0].size))
     model.data.train_x = np.vstack((to_add,model.data.train_x))
 
+    if np.isnan(model.data.train_x).any():
+        print('nan found in features')
+        print(np.argwhere(np.isnan(model.data.train_x)))
+        raise ValueError('nan detected in features')
+
     epochs = 10
     batch_size = 300
 

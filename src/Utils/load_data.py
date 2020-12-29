@@ -30,7 +30,7 @@ class Data:
             short: reduce the size of the data for testing purposes. Removes most of the rows and most of the features.
             path:  path to input csv file.
         '''
-        if short: self.df = df = dt.fread(path,max_nrows=50).to_pandas()
+        if short: self.df = dt.fread(path,max_nrows=50).to_pandas()
         else: self.df = dt.fread(path).to_pandas()
         #print(self.df.columns)
         if short: self.df.drop(['feature_'+str(i) for i in range(2,130)]+['resp_'+str(i) for i in range(1,5)],axis=1, inplace=True)
