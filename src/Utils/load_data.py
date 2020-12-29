@@ -37,9 +37,13 @@ class Data:
         #print(self.df.columns)
         if short: self.df.drop(['feature_'+str(i) for i in range(2,130)]+['resp_'+str(i) for i in range(1,5)],axis=1, inplace=True)
 
+        self.train_x, self.train_y, self.test_x, self.test_y = self.train_test()
+        del self.df
+
     def n_features(self):
-        features = [x for x in self.df.columns if 'feature' in x]
-        return len(features)
+        #features = [x for x in self.df.columns if 'feature' in x]
+        #return len(features)
+        return len(self.train_x[0])
 
     def features_as_np(self):
         return np.array([self.df[x].values.astype(float) for x in self.df.columns if 'feature' in x]).transpose()

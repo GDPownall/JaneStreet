@@ -48,12 +48,11 @@ def train(model):
 
     epochs = 10
     batch_size = 30
-    train_x, train_y, _, _ = model.data.train_test()
 
     for i in range(epochs):
-        for b in range(0,len(train_x),batch_size):
-            x = split_sequences(train_x,model.seq_len,[b,b+batch_size])
-            y = train_y[b:b+batch_size]
+        for b in range(0,len(model.data.train_x),batch_size):
+            x = split_sequences(model.data.train_x,model.seq_len,[b,b+batch_size])
+            y = model.data.train_y[b:b+batch_size]
             optimiser.zero_grad()
             model.reset_hidden_cell(torch.FloatTensor(x).size(0))
             y_pred = model(torch.FloatTensor(x))
