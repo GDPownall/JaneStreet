@@ -42,7 +42,7 @@ class LSTM(nn.Module):
 def train(model):
     model.train()
     loss_function = nn.MSELoss()
-    optimiser = torch.optim.Adam(model.parameters(), lr=0.00000)
+    optimiser = torch.optim.Adam(model.parameters(), lr=0.0001)
 
     print(model)
 
