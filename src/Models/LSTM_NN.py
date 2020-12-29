@@ -51,7 +51,7 @@ def train(model):
     model.data.train_x = np.vstack((to_add,model.data.train_x))
 
     epochs = 10
-    batch_size = 30
+    batch_size = 300
 
     for i in range(epochs):
         for b in range(0,len(model.data.train_x),batch_size):
@@ -65,10 +65,12 @@ def train(model):
             single_loss = loss_function(y_pred, torch.FloatTensor([y]).T)
             single_loss.backward()
             optimiser.step()
+            for param in model.parameters:
+                if torch.isnan(param.data).any(): raise ValueError('nan weight detected epoch '+str(i)+' and batch '+str(b/len(model.data.train_x)))
 
         print(f'epoch: {i:3} loss: {single_loss.item():10.10f}')
-        for param in model.parameters():
-            print(param.data)
+        #for param in model.parameters():
+        #    print(param.data)
 
 def plot_predictions(model):
     train_x, train_y, test_x, test_y = model.data.train_test()
