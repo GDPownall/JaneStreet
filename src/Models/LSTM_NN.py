@@ -48,7 +48,7 @@ def train(model):
 
     ## Add on rows of zeros at start
     to_add = np.zeros((model.seq_len-1, model.data.train_x[0].size))
-    model.data.train_x[0] = np.vstack((to_add,model.data.train_x[0]))
+    model.data.train_x = np.vstack((to_add,model.data.train_x))
 
     epochs = 10
     batch_size = 30
