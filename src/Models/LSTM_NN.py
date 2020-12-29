@@ -67,6 +67,8 @@ def train(model):
             optimiser.step()
 
         print(f'epoch: {i:3} loss: {single_loss.item():10.10f}')
+        for param in model.parameters():
+            print(param.data)
 
 def plot_predictions(model):
     train_x, train_y, test_x, test_y = model.data.train_test()
