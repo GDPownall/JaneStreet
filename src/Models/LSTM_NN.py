@@ -58,6 +58,7 @@ def train(model):
             #print(b/len(model.data.train_x))
             x = split_sequences(model.data.train_x,model.seq_len,[b,b+batch_size])
             y = model.data.train_y[b:b+batch_size]
+            if np.isnan(x).any(): raise ValueError('nan detected in features')
             optimiser.zero_grad()
             model.reset_hidden_cell(torch.FloatTensor(x).size(0))
             y_pred = model(torch.FloatTensor(x))
