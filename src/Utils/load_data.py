@@ -1,29 +1,28 @@
 import datatable as dt
 import numpy as np
 
-def create_inout_sequences(input_vector, seq_len):
-    out_seq = []
-    L = len(input_vector)
-    for i in range(L-seq_len):
-        x = input_vector[i:i+seq_len+1]
-        out_seq.append(x)
-    #print(input_vector)
-    #print(out_seq)
-    return out_seq
+def split_sequences(sequences, n_steps, limits = None):
+    X = list()
+    ## Add on rows of zeros at start
+    to_add = np.zeros((n_steps-1, sequences[0].size))
+    sequences = np.vstack((to_add,sequences))
 
-def split_sequences(sequences, n_steps):
-    X, y = list(), list()
     for i in range(len(sequences)):
+        if limits == None: pass
+        else:
+            if i < limits[0] or i > limits[1]-1: continue
         # find the end of this pattern
         end_ix = i + n_steps
         # check if we are beyond the dataset
         if end_ix > len(sequences):
             break
         # gather input and output parts of the pattern
-        seq_x, seq_y = sequences[i:end_ix, :-1], sequences[end_ix-1, -1]
+        seq_x = sequences[i:end_ix, :]
         X.append(seq_x)
-        y.append(seq_y)
-    return np.array(X), np.array(y)
+    #print(sequences)
+    #print(limits)
+    #print(np.array(X))
+    return np.array(X)
 
 class Data:
     def __init__(self, short=False,path='input/train.csv'):
@@ -43,7 +42,7 @@ class Data:
         return len(features)
 
     def features_as_np(self):
-        return np.array([self.df[x].values.astype(float) for x in self.df.columns if 'feature' in x])
+        return np.array([self.df[x].values.astype(float) for x in self.df.columns if 'feature' in x]).transpose()
 
     def split_sequences(self, seq_len):
         raise RuntimeError('Obsolete function. Splitting the entire dataframe rather than just a batch is very wasteful of RAM.')
@@ -51,13 +50,12 @@ class Data:
         vals = newdf.values.astype(float)
         return split_sequences(vals, seq_len)
 
-    def train_test(self, train_frac = 0.7, seq_len=5):
+    def train_test(self, train_frac = 0.7):
         train_n = int(train_frac*len(self.df))
         test_n  = len(self.df) - train_n
 
         features = self.features_as_np()
         y = self.df['resp'].values.astype(float)
-
         train_x = features[:train_n,:]
         train_y = y[:train_n]
         test_x  = features[train_n:,:]
@@ -65,33 +63,18 @@ class Data:
 
         return train_x, train_y, test_x, test_y
 
-    def train_test_old(self, train_frac = 0.7, seq_len=5):
-        x = self.features_as_np()
-        y = self.df.resp
-        train_n = int(train_frac*len(self.df))
-        test_n  = len(self.df) - train_n
-
-        train_x = []
-        test_x  = []
-        for i in range(len(x)):
-            x[i] = np.concatenate([np.zeros(seq_len), x[i]])
-            #print(x[i])
-            train_x.append(create_inout_sequences(x[i][:train_n+seq_len],seq_len))
-            test_x .append(create_inout_sequences(x[i][train_n:],seq_len))
-
-        train_y = y[:train_n].values.astype(float)
-        test_y  = y[train_n:].values.astype(float)
-
-        return train_x, train_y, test_x, test_y
-        
-
 if __name__ == '__main__':
-    x = Data()
-    print(x.split_sequences())
-    arr = np.array(range(50))
-    arr = arr.reshape(5,10)
+    x = Data(short=True)
+    #print(x.df)
+    #x.add_zero_rows(5)
+    #print(x.df)
+    #exit(1)
+    #print(split_sequences(x.features_as_np(),4))
+    arr = np.array(range(100))
+    arr = arr.reshape(10,10)
     print(arr)
     print(split_sequences(arr,3))
+    print(split_sequences(arr,3,[2,6]))
     exit(1)
     x = Data()
     print(x.df)

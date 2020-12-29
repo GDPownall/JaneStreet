@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from Utils.load_data import Data 
+from Utils.load_data import Data, split_sequences
 from torch import nn
 import torch
 import matplotlib.pyplot as plt
@@ -45,19 +45,19 @@ def train(model):
     optimiser = torch.optim.Adam(model.parameters(), lr=0.001)
 
     print(model)
-    
+
     epochs = 10
-    batch_size = 10
+    batch_size = 30
     train_x, train_y, _, _ = model.data.train_test()
 
     for i in range(epochs):
         for b in range(0,len(train_x),batch_size):
-            x = train_x[b:b+batch_size,:,:]
+            x = split_sequences(train_x,model.seq_len,[b,b+batch_size])
             y = train_y[b:b+batch_size]
             optimiser.zero_grad()
             model.reset_hidden_cell(torch.FloatTensor(x).size(0))
             y_pred = model(torch.FloatTensor(x))
-
+            
             single_loss = loss_function(y_pred, torch.FloatTensor([y]).T)
             single_loss.backward()
             optimiser.step()
