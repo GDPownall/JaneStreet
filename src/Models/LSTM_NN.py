@@ -38,6 +38,9 @@ class LSTM(nn.Module):
         x = lstm_out.contiguous().view(batch_size,-1)
         return self.linear(x)
 
+    def my_save(self,path):
+        del self.data
+        torch.save(self, path)
 
 def train(model):
     model.train()

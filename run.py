@@ -7,4 +7,4 @@ import torch
 data = Data(short=True) # Use path argument to state where data comes from
 model = LSTM(data)
 train(model)
-torch.save(model,'model')
+model.my_save('model')
