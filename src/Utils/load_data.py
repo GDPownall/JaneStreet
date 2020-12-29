@@ -34,7 +34,11 @@ class Data:
         else: self.df = dt.fread(path).to_pandas()
         #print(self.df.columns)
         if short: self.df.drop(['feature_'+str(i) for i in range(2,130)]+['resp_'+str(i) for i in range(1,5)],axis=1, inplace=True)
-
+        for col in [x for x in self.df.columns if 'feature' in x]:
+            self.df[col] = self.df[col].replace(np.NaN, self.df[col].median())
+        #print(self.df.isnull().sum().to_string())
+        #df1 = self.df[self.df.feature_3.isna()]
+        #print(df1.feature_3)
         self.train_x, self.train_y, self.test_x, self.test_y = self.train_test()
         del self.df
 
@@ -65,7 +69,19 @@ class Data:
 
         return train_x, train_y, test_x, test_y
 
+def find_nans():
+    x = Data(short=False)
+    print (x.train_x.size)
+    print (np.sum(np.isnan(x.train_x)))
+    exit(1)
+    if np.isnan(x.train_x).any():
+        print('nan found in features')
+        for i in np.argwhere(np.isnan(x.train_x)):
+            print (i)
+
 if __name__ == '__main__':
+    find_nans()
+    exit(1)
     x = Data(short=True)
     #print(x.df)
     #x.add_zero_rows(5)
