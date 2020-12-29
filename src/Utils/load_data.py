@@ -6,11 +6,9 @@ def split_sequences(sequences, n_steps, limits = None):
     ## Add on rows of zeros at start
     #to_add = np.zeros((n_steps-1, sequences[0].size))
     #sequences = np.vstack((to_add,sequences))
-
-    for i in range(len(sequences)):
-        if limits == None: pass
-        else:
-            if i < limits[0] or i > limits[1]-1: continue
+    if limits == None:
+        limits = [0, len(sequences)]
+    for i in range(limits[0],limits[1]):
         # find the end of this pattern
         end_ix = i + n_steps
         # check if we are beyond the dataset
