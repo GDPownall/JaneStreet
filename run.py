@@ -3,8 +3,22 @@
 from Utils.load_data import Data
 from Models.LSTM_NN import LSTM, train
 import torch
+import pandas as pd
 
-data = Data(short=True) # Use path argument to state where data comes from
+## Training data
+data = Data.from_csv(short=True) # Use path argument to state where data comes from
 model = LSTM(data)
 train(model)
 model.my_save('model')
+del model
+
+## Loading model and testing
+## Dataframe is provided 
+
+test_prediction = pd.read_csv('input/example_test.csv')
+model = torch.load('model')
+for i in range(len(test_prediction)):
+    df = test_prediction.iloc[[i]]
+    #print(df)
+    y = model.kaggle_predict(df)
+    print(y)

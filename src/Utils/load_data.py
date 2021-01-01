@@ -23,24 +23,49 @@ def split_sequences(sequences, n_steps, limits = None):
     return np.array(X)
 
 class Data:
-    def __init__(self, short=False,path='input/train.csv'):
+    def __init__(self, df):
         '''
-        Class for loading the data for this competition.
+        Class for loading the data frame.
+        Arguments:
+            df: dataframe
+        '''
+        self.df = df
+        self.nans = {}
+        for col in [x for x in self.df.columns if 'feature' in x]:
+            self.nans[col] = self.df[col].median()
+            self.df[col] = self.df[col].replace(np.NaN, self.nans[col])
+        self.train_x, self.train_y, self.test_x, self.test_y = self.train_test()
+        del self.df
+
+    @classmethod
+    def from_csv(cls, short=False, path='input/train.csv'):
+        '''
+        Class method for loading directly from csv
         Arguments:
             short: reduce the size of the data for testing purposes. Removes most of the rows and most of the features.
             path:  path to input csv file.
         '''
-        if short: self.df = dt.fread(path,max_nrows=50).to_pandas()
-        else: self.df = dt.fread(path).to_pandas()
-        #print(self.df.columns)
-        if short: self.df.drop(['feature_'+str(i) for i in range(2,130)]+['resp_'+str(i) for i in range(1,5)],axis=1, inplace=True)
-        for col in [x for x in self.df.columns if 'feature' in x]:
-            self.df[col] = self.df[col].replace(np.NaN, self.df[col].median())
-        #print(self.df.isnull().sum().to_string())
-        #df1 = self.df[self.df.feature_3.isna()]
-        #print(df1.feature_3)
-        self.train_x, self.train_y, self.test_x, self.test_y = self.train_test()
-        del self.df
+        if short:
+            df = dt.fread(path,max_nrows=500).to_pandas()
+            #df.drop(['feature_'+str(i) for i in range(2,130)]+['resp_'+str(i) for i in range(1,5)],axis=1, inplace=True)
+        else:
+            df = dt.fread(path).to_pandas()
+        return cls(df)
+
+    @classmethod
+    def for_kaggle_predict(cls, df, fill_nans):
+        '''
+        Static method for just getting sequenced data from an input dataframe.
+        Arguments:
+            df: dataframe
+            fill_nans: dictionary with value to fill nans for each column
+        '''
+        for col in [x for x in df.columns if 'feature' in x]:
+            df[col] = df[col].replace(np.NaN, fill_nans[col])
+        dat = cls(df)
+        dat.train_x = np.vstack((dat.train_x,dat.test_x))
+        return dat 
+
 
     def n_features(self):
         #features = [x for x in self.df.columns if 'feature' in x]
@@ -61,11 +86,16 @@ class Data:
         test_n  = len(self.df) - train_n
 
         features = self.features_as_np()
-        y = self.df['resp'].values.astype(float)
         train_x = features[:train_n,:]
-        train_y = y[:train_n]
         test_x  = features[train_n:,:]
-        test_y  = y[train_n:]
+
+        if 'resp' in self.df.columns:
+            y = self.df['resp'].values.astype(float)
+            train_y = y[:train_n]
+            test_y  = y[train_n:]
+        else:
+            train_y = []
+            test_y = []
 
         return train_x, train_y, test_x, test_y
 

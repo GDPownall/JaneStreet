@@ -5,6 +5,7 @@ from torch import nn
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 class LSTM(nn.Module):
     def __init__(self, data = None):
@@ -38,9 +39,30 @@ class LSTM(nn.Module):
         x = lstm_out.contiguous().view(batch_size,-1)
         return self.linear(x)
 
+    def add_zeros_to_data(self):
+        to_add = np.zeros((self.seq_len-1, self.data.train_x[0].size))
+        self.data.train_x = np.vstack((to_add,self.data.train_x))
+
     def my_save(self,path):
-        del self.data
+        self.data_nans = self.data.nans
+        self.data = None
+        self.df   = pd.DataFrame()
         torch.save(self, path)
+
+    def kaggle_predict(self, row):
+        if self.df.empty:
+            self.df = row
+        else:
+            self.df = self.df.append(row)
+            while len(self.df) > self.seq_len:
+                self.df = self.df.iloc[1:]
+        #print(self.df)
+        self.data = Data.for_kaggle_predict(self.df, self.data_nans)
+        self.add_zeros_to_data()
+        x = split_sequences(self.data.train_x, self.seq_len)
+        self.reset_hidden_cell(torch.FloatTensor(x).size(0))
+        y_pred = self(torch.FloatTensor(x))[-1]
+        return y_pred
 
 def train(model):
     model.train()
@@ -50,8 +72,7 @@ def train(model):
     print(model)
 
     ## Add on rows of zeros at start
-    to_add = np.zeros((model.seq_len-1, model.data.train_x[0].size))
-    model.data.train_x = np.vstack((to_add,model.data.train_x))
+    model.add_zeros_to_data()
 
     if np.isnan(model.data.train_x).any():
         print('nan found in features')
