@@ -33,9 +33,10 @@ class Data:
         '''
         self.df = df
         self.nans = {}
-        for col in [x for x in self.df.columns if 'feature' in x]:
-            self.nans[col] = self.df[col].median()
-            self.df[col] = self.df[col].replace(np.NaN, self.nans[col])
+        if df.isnull().values.any()
+            for col in [x for x in self.df.columns if 'feature' in x]:
+                self.nans[col] = self.df[col].median()
+                self.df[col] = self.df[col].replace(np.NaN, self.nans[col])
         self.train_x, self.train_y, self.test_x, self.test_y = self.train_test()
         del self.df
 
