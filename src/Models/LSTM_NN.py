@@ -58,7 +58,8 @@ class LSTM(nn.Module):
                 self.df = self.df.iloc[1:]
         #print(self.df)
         self.data = Data.for_kaggle_predict(self.df, self.data_nans)
-        self.add_zeros_to_data()
+        if self.data.train_x.shape[0] < self.seq_len:
+            self.add_zeros_to_data()
         x = split_sequences(self.data.train_x, self.seq_len)
         self.reset_hidden_cell(torch.FloatTensor(x).size(0))
         y_pred = self(torch.FloatTensor(x))[-1]
