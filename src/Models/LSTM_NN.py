@@ -30,6 +30,8 @@ class LSTM(nn.Module):
     def reset_hidden_cell(self, batch_size):
         self.hidden_cell = (torch.zeros(self.n_layers,batch_size,self.hidden_layer_size),
                             torch.zeros(self.n_layers,batch_size,self.hidden_layer_size))
+        if torch.cuda.is_available():
+            self.hidden_cell.cuda()
 
     def forward(self, input_seq):
         ## Define function to calculate predictions
