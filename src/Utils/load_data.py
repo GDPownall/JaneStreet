@@ -33,7 +33,7 @@ class Data:
         '''
         self.df = df
         self.nans = {}
-        if df.isnull().values.any()
+        if df.isnull().values.any():
             for col in [x for x in self.df.columns if 'feature' in x]:
                 self.nans[col] = self.df[col].median()
                 self.df[col] = self.df[col].replace(np.NaN, self.nans[col])
