@@ -62,7 +62,11 @@ class LSTM(nn.Module):
             self.add_zeros_to_data()
         x = split_sequences(self.data.train_x, self.seq_len)
         self.reset_hidden_cell(torch.FloatTensor(x).size(0))
-        y_pred = self(torch.FloatTensor(x))[-1]
+        x_tens = torch.FloatTensor(x)
+        if torch.cuda.is_available():
+            x_tens = x_tens.cuda() 
+
+        y_pred = self(x_tens)[-1]
         return y_pred
 
 def train(model):
