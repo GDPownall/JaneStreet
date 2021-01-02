@@ -2,6 +2,8 @@ import datatable as dt
 import numpy as np
 
 def split_sequences(sequences, n_steps, limits = None):
+    if sequences.shape[0] == n_steps:
+        return np.array([sequences])
     X = list()
     ## Add on rows of zeros at start
     #to_add = np.zeros((n_steps-1, sequences[0].size))
