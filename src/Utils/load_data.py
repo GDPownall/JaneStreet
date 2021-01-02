@@ -62,8 +62,10 @@ class Data:
             df: dataframe
             fill_nans: dictionary with value to fill nans for each column
         '''
-        for col in [x for x in df.columns if 'feature' in x]:
-            df[col] = df[col].replace(np.NaN, fill_nans[col])
+        #for col in df.columns:
+        #    if 'feature' not in col: continue
+        #    df[col] = df[col].replace(np.NaN, fill_nans[col])
+        df.fillna(fill_nans,inplace=True)    
         dat = cls(df)
         dat.train_x = np.vstack((dat.train_x,dat.test_x))
         return dat 
