@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 class LSTM(nn.Module):
     def __init__(self, data = None):
         super().__init__()
@@ -28,10 +30,8 @@ class LSTM(nn.Module):
         #self.reset_hidden_cell()
 
     def reset_hidden_cell(self, batch_size):
-        self.hidden_cell = (torch.zeros(self.n_layers,batch_size,self.hidden_layer_size),
-                            torch.zeros(self.n_layers,batch_size,self.hidden_layer_size))
-        if torch.cuda.is_available():
-            self.hidden_cell.cuda()
+        self.hidden_cell = (torch.zeros(self.n_layers,batch_size,self.hidden_layer_size).to(device),
+                            torch.zeros(self.n_layers,batch_size,self.hidden_layer_size).to(device))
 
     def forward(self, input_seq):
         ## Define function to calculate predictions
