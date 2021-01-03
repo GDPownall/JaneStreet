@@ -17,8 +17,13 @@ del model
 
 test_prediction = pd.read_csv('input/example_test.csv')
 model = torch.load('model')
-for i in range(len(test_prediction)):
-    df = test_prediction.iloc[[i],1:]
-    #print(df)
-    y = model.kaggle_predict(df)
-    print(y)
+def predict():
+    for i in range(len(test_prediction)):
+        df = test_prediction.iloc[[i],1:]
+        #print(df)
+        y = model.kaggle_predict(df)
+        #print(y)
+    return
+
+import timeit
+print(timeit.timeit(stmt=predict, number=5))

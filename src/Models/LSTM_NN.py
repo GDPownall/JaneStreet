@@ -14,11 +14,11 @@ class LSTM(nn.Module):
         super().__init__()
         ## Sizes of various things
         self.data = data
-        self.hidden_layer_size = 100 # number of hidden states
+        self.hidden_layer_size = 60 # number of hidden states
         n_features = data.n_features()
         output_size = 1
         self.n_layers = 1
-        self.seq_len = 5
+        self.seq_len = 3
 
         ## layers
         self.lstm = nn.LSTM(
