@@ -46,23 +46,22 @@ class LSTM(nn.Module):
         self.data.train_x = np.vstack((to_add,self.data.train_x))
 
     def my_save(self,path):
-        self.data_nans = self.data.nans
-        self.data = None
-        self.df   = pd.DataFrame()
+        self.data_nans      = self.data.nans
+        self.data_nans_np   = np.array([self.data_nans[key] for key in self.data_nans.keys()])
+        self.data           = None
+        self.predict_from   = np.zeros((self.seq_len, len(self.data_nans.keys()))) 
         torch.save(self, path)
 
     def kaggle_predict(self, row):
-        if self.df.empty:
-            self.df = row
-        else:
-            self.df = self.df.append(row)
-            while len(self.df) > self.seq_len:
-                self.df = self.df.iloc[1:]
-        #print(self.df)
-        self.data = Data.for_kaggle_predict(self.df, self.data_nans)
-        if self.data.train_x.shape[0] < self.seq_len:
-            self.add_zeros_to_data()
-        x = split_sequences(self.data.train_x, self.seq_len)
+        row_vals = row.values[:,2:-1]
+        if np.isnan(row_vals.sum()):
+            #print('================')
+            #print(row_vals)
+            #print(self.data_nans_np)
+            row_vals = np.where(np.isnan(row_vals), self.data_nans_np , row_vals)
+            #print(row_vals)
+        self.predict_from = np.vstack((self.predict_from,row_vals))[1:,:]
+        x = split_sequences(self.predict_from, self.seq_len)
         self.reset_hidden_cell(torch.FloatTensor(x).size(0))
         x_tens = torch.FloatTensor(x)
         if torch.cuda.is_available():
