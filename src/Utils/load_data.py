@@ -37,7 +37,7 @@ class Data:
             for col in [x for x in self.df.columns if 'feature' in x]:
                 self.nans[col] = self.df[col].median()
                 self.df[col] = self.df[col].replace(np.NaN, self.nans[col])
-        self.train_x, self.train_y, self.test_x, self.test_y = self.train_test()
+        self.train_x, self.train_y, self.test_x, self.test_y, self.train_weight, self.test_weight = self.train_test()
         del self.df
 
     @classmethod
@@ -102,7 +102,11 @@ class Data:
             train_y = []
             test_y = []
 
-        return train_x, train_y, test_x, test_y
+        weight = self.df['weight'].values.astype(float)
+        train_weight = weight[:train_n]
+        test_weight  = weight[train_n:]
+
+        return train_x, train_y, test_x, test_y, train_weight, test_weight
 
 def find_nans():
     x = Data(short=False)

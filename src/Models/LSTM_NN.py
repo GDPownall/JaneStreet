@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 from Utils.load_data import Data, split_sequences
+from Utils.Loss import custom_loss
 from torch import nn
 import torch
+import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -39,7 +41,8 @@ class LSTM(nn.Module):
 
         lstm_out, self.hidden_cell = self.lstm(input_seq, self.hidden_cell)
         x = lstm_out.contiguous().view(batch_size,-1)
-        return self.linear(x)
+        prob = torch.sigmoid(self.linear(x))
+        return prob 
 
     def add_zeros_to_data(self):
         to_add = np.zeros((self.seq_len-1, self.data.train_x[0].size))
@@ -72,7 +75,7 @@ class LSTM(nn.Module):
 
 def train(model):
     model.train()
-    loss_function = nn.MSELoss()
+    loss_function = custom_loss#nn.MSELoss()
     optimiser = torch.optim.Adam(model.parameters(), lr=0.0001)
 
     print(model)
@@ -93,12 +96,13 @@ def train(model):
             #print(b/len(model.data.train_x))
             x = split_sequences(model.data.train_x,model.seq_len,[b,b+batch_size])
             y = model.data.train_y[b:b+batch_size]
+            weight = model.data.train_weight[b:b+batch_size]
             if np.isnan(x).any(): raise ValueError('nan detected in features')
             optimiser.zero_grad()
             model.reset_hidden_cell(torch.FloatTensor(x).size(0))
             y_pred = model(torch.FloatTensor(x))
-            
-            single_loss = loss_function(y_pred, torch.FloatTensor([y]).T)
+            #single_loss = loss_function(y_pred, torch.FloatTensor([y]).T)
+            single_loss = loss_function(y_pred, torch.FloatTensor([y]).T, torch.FloatTensor([weight]).T)
             single_loss.backward()
             optimiser.step()
             for param in model.parameters():
