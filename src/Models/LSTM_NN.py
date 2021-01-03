@@ -53,7 +53,7 @@ class LSTM(nn.Module):
         torch.save(self, path)
 
     def kaggle_predict(self, row):
-        row_vals = row.values[:,2:-1]
+        row_vals = row.values[:,1:-1]
         if np.isnan(row_vals.sum()):
             #print('================')
             #print(row_vals)
