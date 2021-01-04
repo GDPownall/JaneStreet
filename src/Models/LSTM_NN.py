@@ -12,15 +12,15 @@ import pandas as pd
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class LSTM(nn.Module):
-    def __init__(self, data = None):
+    def __init__(self, data = None, hidden_layer_size = 60, n_lstm_layers = 1, seq_len = 3):
         super().__init__()
         ## Sizes of various things
         self.data = data
-        self.hidden_layer_size = 60 # number of hidden states
+        self.hidden_layer_size = hidden_layer_size # number of hidden states
         n_features = data.n_features()
         output_size = 1
-        self.n_layers = 1
-        self.seq_len = 3
+        self.n_layers = n_lstm_layers
+        self.seq_len = seq_len
 
         ## layers
         self.lstm = nn.LSTM(
@@ -73,10 +73,10 @@ class LSTM(nn.Module):
         y_pred = self(x_tens)[-1]
         return y_pred
 
-def train(model):
+def train(model, lr=0.0001, epochs=10, batch_size=300):
     model.train()
     loss_function = custom_loss#nn.MSELoss()
-    optimiser = torch.optim.Adam(model.parameters(), lr=0.0001)
+    optimiser = torch.optim.Adam(model.parameters(), lr=lr)
 
     print(model)
 
@@ -88,10 +88,8 @@ def train(model):
         print(np.argwhere(np.isnan(model.data.train_x)))
         raise ValueError('nan detected in features')
 
-    epochs = 10
-    batch_size = 300
-
     for i in range(epochs):
+        epoch_loss = 0.
         for b in range(0,len(model.data.train_x),batch_size):
             #print(b/len(model.data.train_x))
             x = split_sequences(model.data.train_x,model.seq_len,[b,b+batch_size])
@@ -107,8 +105,9 @@ def train(model):
             optimiser.step()
             for param in model.parameters():
                 if torch.isnan(param.data).any(): raise ValueError('nan weight detected epoch '+str(i)+' and batch '+str(b/len(model.data.train_x)))
+            epoch_loss += single_loss.item()
 
-        print(f'epoch: {i:3} loss: {single_loss.item():10.10f}')
+        print(f'epoch: {i:3} loss: {epoch_loss:10.10f}')
         #for param in model.parameters():
         #    print(param.data)
 
