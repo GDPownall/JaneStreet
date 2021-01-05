@@ -3,3 +3,4 @@ output*
 *.pyc
 *pycache*
 model
+log.csv

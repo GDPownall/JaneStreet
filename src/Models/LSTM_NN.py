@@ -74,7 +74,7 @@ class LSTM(nn.Module):
         y_pred = self(x_tens)[-1]
         return y_pred
 
-def train(model, lr=0.0001, epochs=10, batch_size=300):
+def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None):
     model.train()
     loss_function = custom_loss#nn.MSELoss()
     optimiser = torch.optim.Adam(model.parameters(), lr=lr)
@@ -119,9 +119,23 @@ def train(model, lr=0.0001, epochs=10, batch_size=300):
             test_weight = model.data.test_weight[b:b+batch_size]
             model.reset_hidden_cell(torch.FloatTensor(x_test).size(0))
             y_test_pred = model(torch.FloatTensor(x_test))
-            test_loss += loss_function(y_test_pred, torch.FloatTensor([y_test]).T, torch.FloatTensor([test_weight]).T)
+            test_loss += loss_function(y_test_pred, torch.FloatTensor([y_test]).T, torch.FloatTensor([test_weight]).T).item()
         print(f'epoch: {i:3} loss: {epoch_loss:10.10f}')
         print(f'epoch: {i:3} test loss: {test_loss:10.10f}')
+        if log_file != None:
+            log = ','.join([str(a) for a in [
+                i,
+                lr,
+                batch_size,
+                model.hidden_layer_size,
+                model.n_layers, 
+                model.seq_len,
+                epoch_loss,
+                test_loss
+                ]])
+            log += '\n'
+            with open(log_file,'a') as ifile:
+                ifile.write(log)
         #for param in model.parameters():
         #    print(param.data)
 
