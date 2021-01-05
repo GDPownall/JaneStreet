@@ -91,14 +91,17 @@ def train(model, lr=0.0001, epochs=10, batch_size=300):
 
     for i in range(epochs):
         epoch_loss = 0.
+        test_loss  = 0.
         for b in range(0,len(model.data.train_x),batch_size):
-            #print(b/len(model.data.train_x))
+            #Set up x and y
             x = split_sequences(model.data.train_x,model.seq_len,[b,b+batch_size])
             y = model.data.train_y[b:b+batch_size]
             weight = model.data.train_weight[b:b+batch_size]
             if np.isnan(x).any(): raise ValueError('nan detected in features')
+            #Set up model
             optimiser.zero_grad()
             model.reset_hidden_cell(torch.FloatTensor(x).size(0))
+            #Produce prediction
             y_pred = model(torch.FloatTensor(x))
             #single_loss = loss_function(y_pred, torch.FloatTensor([y]).T)
             single_loss = loss_function(y_pred, torch.FloatTensor([y]).T, torch.FloatTensor([weight]).T)
@@ -107,12 +110,16 @@ def train(model, lr=0.0001, epochs=10, batch_size=300):
             for param in model.parameters():
                 if torch.isnan(param.data).any(): raise ValueError('nan weight detected epoch '+str(i)+' and batch '+str(b/len(model.data.train_x)))
             epoch_loss += single_loss.item()
-        x_test = split_sequences(model.data.test_x,model.seq_len)
-        y_test = model.data.test_y
-        test_weight = model.data.test_weight
-        model.reset_hidden_cell(torch.FloatTensor(x_test).size(0))
-        y_test_pred = model(torch.FloatTensor(x_test))
-        test_loss = loss_function(y_test_pred, torch.FloatTensor([y_test]).T, torch.FloatTensor([test_weight]).T)
+
+        # Calculate loss for test set
+        # Use same batch size for memory efficiency
+        for b in range(0,len(model.data.test_x),batch_size):
+            x_test = split_sequences(model.data.test_x,model.seq_len,[b,b+batch_size])
+            y_test = model.data.test_y[b:b+batch_size]
+            test_weight = model.data.test_weight[b:b+batch_size]
+            model.reset_hidden_cell(torch.FloatTensor(x_test).size(0))
+            y_test_pred = model(torch.FloatTensor(x_test))
+            test_loss += loss_function(y_test_pred, torch.FloatTensor([y_test]).T, torch.FloatTensor([test_weight]).T)
         print(f'epoch: {i:3} loss: {epoch_loss:10.10f}')
         print(f'epoch: {i:3} test loss: {test_loss:10.10f}')
         #for param in model.parameters():

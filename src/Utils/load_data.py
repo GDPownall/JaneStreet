@@ -49,10 +49,10 @@ class Data:
             path:  path to input csv file.
         '''
         if short:
-            df = dt.fread(path,max_nrows=500).to_pandas()
+            df = dt.fread(path,max_nrows=500,fill=True).to_pandas()
             #df.drop(['feature_'+str(i) for i in range(2,130)]+['resp_'+str(i) for i in range(1,5)],axis=1, inplace=True)
         else:
-            df = dt.fread(path).to_pandas()
+            df = dt.fread(path,fill=True).to_pandas()
         return cls(df)
 
     @classmethod
