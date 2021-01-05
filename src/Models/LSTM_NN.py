@@ -47,6 +47,7 @@ class LSTM(nn.Module):
     def add_zeros_to_data(self):
         to_add = np.zeros((self.seq_len-1, self.data.train_x[0].size))
         self.data.train_x = np.vstack((to_add,self.data.train_x))
+        self.data.test_x  = np.vstack((to_add,self.data.test_x))
 
     def my_save(self,path):
         self.data_nans      = self.data.nans
@@ -106,8 +107,14 @@ def train(model, lr=0.0001, epochs=10, batch_size=300):
             for param in model.parameters():
                 if torch.isnan(param.data).any(): raise ValueError('nan weight detected epoch '+str(i)+' and batch '+str(b/len(model.data.train_x)))
             epoch_loss += single_loss.item()
-
+        x_test = split_sequences(model.data.test_x,model.seq_len)
+        y_test = model.data.test_y
+        test_weight = model.data.test_weight
+        model.reset_hidden_cell(torch.FloatTensor(x_test).size(0))
+        y_test_pred = model(torch.FloatTensor(x_test))
+        test_loss = loss_function(y_test_pred, torch.FloatTensor([y_test]).T, torch.FloatTensor([test_weight]).T)
         print(f'epoch: {i:3} loss: {epoch_loss:10.10f}')
+        print(f'epoch: {i:3} test loss: {test_loss:10.10f}')
         #for param in model.parameters():
         #    print(param.data)
 
