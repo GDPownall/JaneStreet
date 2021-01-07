@@ -28,6 +28,7 @@ class LSTM(nn.Module):
                 input_size = n_features,
                 hidden_size = self.hidden_layer_size,
                 num_layers = self.n_layers,
+                dropout=0.5,
                 batch_first = True)
         self.linear = nn.Linear(self.hidden_layer_size*self.seq_len, output_size)
         #self.reset_hidden_cell()
@@ -76,6 +77,7 @@ class LSTM(nn.Module):
         return y_pred
 
 def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None):
+
     model.train()
     loss_function = custom_loss#nn.MSELoss()
     optimiser = torch.optim.Adam(model.parameters(), lr=lr)
