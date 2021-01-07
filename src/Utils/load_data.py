@@ -1,4 +1,4 @@
-import datatable as dt
+
 import numpy as np
 
 def split_sequences(sequences, n_steps, limits = None):
@@ -41,18 +41,21 @@ class Data:
         del self.df
 
     @classmethod
-    def from_csv(cls, short=False, path='input/train.csv'):
+    def from_csv(cls, short=False, path='input/train.csv', use_datatable=True):
         '''
         Class method for loading directly from csv
         Arguments:
             short: reduce the size of the data for testing purposes. Removes most of the rows and most of the features.
             path:  path to input csv file.
         '''
+        if use_datatable: import datatable as dt
+        else:             import pandas    as pd
         if short:
-            df = dt.fread(path,max_nrows=500,fill=True).to_pandas()
-            #df.drop(['feature_'+str(i) for i in range(2,130)]+['resp_'+str(i) for i in range(1,5)],axis=1, inplace=True)
+            if use_datatable: df = dt.fread(path,max_nrows=500,fill=True).to_pandas()
+            else:             df = pd.read_csv(path, nrows=500)
         else:
-            df = dt.fread(path,fill=True).to_pandas()
+            if use_datatable: df = dt.fread(path,fill=True).to_pandas()
+            else:             df = pd.read_csv(path)
         return cls(df)
 
     @classmethod

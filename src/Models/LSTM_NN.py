@@ -8,6 +8,7 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import os.path
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -100,11 +101,12 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None):
             if np.isnan(x).any(): raise ValueError('nan detected in features')
             #Set up model
             optimiser.zero_grad()
-            model.reset_hidden_cell(torch.FloatTensor(x).size(0))
+            x_tensor = torch.FloatTensor(x).to(device)
+            model.reset_hidden_cell(x_tensor.size(0))
             #Produce prediction
-            y_pred = model(torch.FloatTensor(x))
+            y_pred = model(x_tensor)
             #single_loss = loss_function(y_pred, torch.FloatTensor([y]).T)
-            single_loss = loss_function(y_pred, torch.FloatTensor([y]).T, torch.FloatTensor([weight]).T)
+            single_loss = loss_function(y_pred, torch.FloatTensor([y]).to(device).T, torch.FloatTensor([weight]).to(device).T)
             single_loss.backward()
             optimiser.step()
             for param in model.parameters():
@@ -118,11 +120,14 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None):
             y_test = model.data.test_y[b:b+batch_size]
             test_weight = model.data.test_weight[b:b+batch_size]
             model.reset_hidden_cell(torch.FloatTensor(x_test).size(0))
-            y_test_pred = model(torch.FloatTensor(x_test))
-            test_loss += loss_function(y_test_pred, torch.FloatTensor([y_test]).T, torch.FloatTensor([test_weight]).T).item()
+            y_test_pred = model(torch.FloatTensor(x_test).to(device))
+            test_loss += loss_function(y_test_pred, torch.FloatTensor([y_test]).to(device).T, torch.FloatTensor([test_weight]).to(device).T).item()
         print(f'epoch: {i:3} loss: {epoch_loss:10.10f}')
         print(f'epoch: {i:3} test loss: {test_loss:10.10f}')
         if log_file != None:
+            if not os.path.isfile(log_file):
+                with open(log_file,'a') as ifile:
+                    ifile.write('epoch,lr,batch_size,hidden_layer_size,n_layers,seq_len,epoch_loss,test_loss\n')
             log = ','.join([str(a) for a in [
                 i,
                 lr,
