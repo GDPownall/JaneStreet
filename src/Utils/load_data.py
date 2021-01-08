@@ -41,12 +41,13 @@ class Data:
         del self.df
 
     @classmethod
-    def from_csv(cls, short=False, path='input/train.csv', use_datatable=True):
+    def from_csv(cls, short=False, path='input/train.csv', use_datatable=True, rm_early = True):
         '''
         Class method for loading directly from csv
         Arguments:
             short: reduce the size of the data for testing purposes. Removes most of the rows and most of the features.
             path:  path to input csv file.
+            rm_early: remove date < 85 (not for short)
         '''
         if use_datatable: import datatable as dt
         else:             import pandas    as pd
@@ -56,6 +57,7 @@ class Data:
         else:
             if use_datatable: df = dt.fread(path,fill=True).to_pandas()
             else:             df = pd.read_csv(path)
+            if rm_early:      df = df[df.date < 85]
         return cls(df)
 
     @classmethod
