@@ -119,7 +119,8 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda
             for param in model.parameters():
                 if torch.isnan(param.data).any(): raise ValueError('nan weight detected epoch '+str(i)+' and batch '+str(b/len(model.data.train_x)))
             epoch_loss += single_loss.item()
-
+        print(f'epoch: {i:3} loss: {epoch_loss:10.10f}')
+        if model.data.train_full: continue
         # Calculate loss for test set
         # Use same batch size for memory efficiency
         for b in range(0,len(model.data.test_x),batch_size):
@@ -131,7 +132,6 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda
             test_loss += loss_function(y_test_pred, 
                     torch.FloatTensor([y_test]).to(device).T, 
                     torch.FloatTensor([test_weight]).to(device).T).item()
-        print(f'epoch: {i:3} loss: {epoch_loss:10.10f}')
         print(f'epoch: {i:3} test loss: {test_loss:10.10f}')
         if log_file != None:
             if not os.path.isfile(log_file):

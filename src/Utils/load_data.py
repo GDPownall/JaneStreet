@@ -25,23 +25,24 @@ def split_sequences(sequences, n_steps, limits = None):
     return np.array(X)
 
 class Data:
-    def __init__(self, df):
+    def __init__(self, df, train_full = False):
         '''
         Class for loading the data frame.
         Arguments:
             df: dataframe
         '''
         self.df = df
+        self.train_full = train_full
         self.nans = {}
         if df.isnull().values.any():
             for col in [x for x in self.df.columns if 'feature' in x]:
                 self.nans[col] = self.df[col].median()
                 self.df[col] = self.df[col].replace(np.NaN, self.nans[col])
-        self.train_x, self.train_y, self.test_x, self.test_y, self.train_weight, self.test_weight = self.train_test()
+        self.train_x, self.train_y, self.test_x, self.test_y, self.train_weight, self.test_weight = self.train_test(1. if train_full else 0.7)
         del self.df
 
     @classmethod
-    def from_csv(cls, short=False, path='input/train.csv', use_datatable=True, rm_early = True):
+    def from_csv(cls, short=False, path='input/train.csv', use_datatable=True, rm_early = True, train_full = False):
         '''
         Class method for loading directly from csv
         Arguments:
@@ -58,7 +59,7 @@ class Data:
             if use_datatable: df = dt.fread(path,fill=True).to_pandas()
             else:             df = pd.read_csv(path)
             if rm_early:      df = df[df.date < 85]
-        return cls(df)
+        return cls(df, train_full = train_full)
 
     @classmethod
     def for_kaggle_predict(cls, df, fill_nans):
