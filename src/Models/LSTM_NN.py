@@ -78,7 +78,7 @@ class LSTM(nn.Module):
         y_pred = self(x_tens)[-1]
         return y_pred
 
-def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None):
+def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda = 0.01):
 
     model.train()
     loss_function = custom_loss#nn.MSELoss()
@@ -110,7 +110,10 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None):
             #Produce prediction
             y_pred = model(x_tensor)
             #single_loss = loss_function(y_pred, torch.FloatTensor([y]).T)
-            single_loss = loss_function(y_pred, torch.FloatTensor([y]).to(device).T, torch.FloatTensor([weight]).to(device).T)
+            single_loss = loss_function(y_pred, 
+                    torch.FloatTensor([y]).to(device).T, 
+                    torch.FloatTensor([weight]).to(device).T,
+                    reg_lambda*list(model.parameters())[-2])
             single_loss.backward()
             optimiser.step()
             for param in model.parameters():
@@ -125,7 +128,9 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None):
             test_weight = model.data.test_weight[b:b+batch_size]
             model.reset_hidden_cell(torch.FloatTensor(x_test).size(0))
             y_test_pred = model(torch.FloatTensor(x_test).to(device))
-            test_loss += loss_function(y_test_pred, torch.FloatTensor([y_test]).to(device).T, torch.FloatTensor([test_weight]).to(device).T).item()
+            test_loss += loss_function(y_test_pred, 
+                    torch.FloatTensor([y_test]).to(device).T, 
+                    torch.FloatTensor([test_weight]).to(device).T).item()
         print(f'epoch: {i:3} loss: {epoch_loss:10.10f}')
         print(f'epoch: {i:3} test loss: {test_loss:10.10f}')
         if log_file != None:
