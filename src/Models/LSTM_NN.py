@@ -82,7 +82,7 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda
 
     model.train()
     loss_function = custom_loss#nn.MSELoss()
-    optimiser = torch.optim.Adam(model.parameters(), lr=lr)
+    optimiser = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=reg_lambda)
 
     print(model)
 
@@ -112,8 +112,8 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda
             #single_loss = loss_function(y_pred, torch.FloatTensor([y]).T)
             single_loss = loss_function(y_pred, 
                     torch.FloatTensor([y]).to(device).T, 
-                    torch.FloatTensor([weight]).to(device).T,
-                    reg_lambda*list(model.parameters())[-2])
+                    torch.FloatTensor([weight]).to(device).T)
+                    #reg_lambda*list(model.parameters())[-2])
             single_loss.backward()
             optimiser.step()
             for param in model.parameters():
