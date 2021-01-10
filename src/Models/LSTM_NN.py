@@ -31,7 +31,7 @@ class LSTM(nn.Module):
                 dropout=0.5,
                 batch_first = True)
         self.dropout = nn.Dropout(0.5)
-        self.linear = nn.Linear(self.hidden_layer_size*self.seq_len, output_size)
+        self.linear = nn.Linear(self.hidden_layer_size, output_size)
         #self.reset_hidden_cell()
 
     def reset_hidden_cell(self, batch_size):
@@ -43,7 +43,9 @@ class LSTM(nn.Module):
         batch_size, seq_len, _ = input_seq.size()
 
         lstm_out, self.hidden_cell = self.lstm(input_seq, self.hidden_cell)
-        x = lstm_out.contiguous().view(batch_size,-1)
+        x = lstm_out.contiguous()
+        #x = x.view(batch_size,-1)
+        x = x[:,-1,:] # This one takes only output from last lstm layer
         x = self.dropout(x)
         prob = torch.sigmoid(self.linear(x))
         return prob 

@@ -7,7 +7,7 @@ import pandas as pd
 
 ## Training data
 data = Data.from_csv(short=True) # Use path argument to state where data comes from
-model = LSTM(data)
+model = LSTM(data,n_lstm_layers=2)
 train(model,log_file='log.csv')
 model.my_save('model')
 del model
