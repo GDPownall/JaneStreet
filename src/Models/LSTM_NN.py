@@ -80,7 +80,7 @@ class LSTM(nn.Module):
         y_pred = self(x_tens)[-1]
         return y_pred
 
-def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda = 0.01):
+def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda = 0.01, lin_reg_lambda = 0.01):
 
     model.train()
     loss_function = custom_loss#nn.MSELoss()
@@ -114,8 +114,8 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda
             #single_loss = loss_function(y_pred, torch.FloatTensor([y]).T)
             single_loss = loss_function(y_pred, 
                     torch.FloatTensor([y]).to(device).T, 
-                    torch.FloatTensor([weight]).to(device).T)
-                    #reg_lambda*list(model.parameters())[-2])
+                    torch.FloatTensor([weight]).to(device).T,
+                    lin_reg_lambda*list(model.parameters())[-2])
             single_loss.backward()
             optimiser.step()
             for param in model.parameters():
