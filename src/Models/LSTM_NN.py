@@ -123,6 +123,7 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda
         if model.data.train_full: continue
         # Calculate loss for test set
         # Use same batch size for memory efficiency
+        model.eval()
         for b in range(0,len(model.data.test_x),batch_size):
             x_test = split_sequences(model.data.test_x,model.seq_len,[b,b+batch_size])
             y_test = model.data.test_y[b:b+batch_size]
@@ -133,6 +134,7 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda
                     torch.FloatTensor([y_test]).to(device).T, 
                     torch.FloatTensor([test_weight]).to(device).T).item()
         print(f'epoch: {i:3} test loss: {test_loss:10.10f}')
+        model.train()
         if log_file != None:
             if not os.path.isfile(log_file):
                 with open(log_file,'a') as ifile:
