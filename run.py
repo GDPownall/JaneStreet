@@ -10,6 +10,8 @@ data = Data.from_csv(short=True) # Use path argument to state where data comes f
 model = LSTM(data,n_lstm_layers=2)
 train(model,log_file='log.csv')
 model.my_save('model')
+for param in list(model.parameters()):
+    print(param.size())
 del model
 
 ## Loading model and testing

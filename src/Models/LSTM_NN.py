@@ -31,8 +31,10 @@ class LSTM(nn.Module):
                 num_layers = self.n_layers,
                 dropout=dropout,
                 batch_first = True)
-        self.dropout = nn.Dropout(dropout)
-        self.linear = nn.Linear(self.hidden_layer_size, output_size)
+        self.dropout       = nn.Dropout(dropout)
+        self.linear_inter  = nn.Linear(self.hidden_layer_size, self.hidden_layer_size)
+        self.relu          = nn.ReLU()
+        self.linear        = nn.Linear(self.hidden_layer_size, output_size)
         #self.reset_hidden_cell()
 
     def reset_hidden_cell(self, batch_size):
@@ -48,6 +50,8 @@ class LSTM(nn.Module):
         #x = x.view(batch_size,-1)
         x = x[:,-1,:] # This one takes only output from last lstm layer
         x = self.dropout(x)
+        x = self.linear_inter(x)
+        x = self.relu(x)
         prob = torch.sigmoid(self.linear(x))
         return prob 
 
@@ -116,7 +120,7 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda
             single_loss = loss_function(y_pred, 
                     torch.FloatTensor([y]).to(device).T, 
                     torch.FloatTensor([weight]).to(device).T,
-                    lin_reg_lambda*list(model.parameters())[-2])
+                    lin_reg_lambda*(list(model.parameters())[-2]+list(model.parameters())[-4]))
             single_loss.backward()
             optimiser.step()
             for param in model.parameters():
