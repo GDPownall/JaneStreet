@@ -13,7 +13,7 @@ import os.path
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class LSTM(nn.Module):
-    def __init__(self, data = None, hidden_layer_size = 60, n_lstm_layers = 1, seq_len = 3):
+    def __init__(self, data = None, hidden_layer_size = 60, n_lstm_layers = 1, seq_len = 3, dropout = 0.2):
         super().__init__()
         ## Sizes of various things
         self.data = data
@@ -22,15 +22,16 @@ class LSTM(nn.Module):
         output_size = 1
         self.n_layers = n_lstm_layers
         self.seq_len = seq_len
+        self.dropout = dropout
 
         ## layers
         self.lstm = nn.LSTM(
                 input_size = n_features,
                 hidden_size = self.hidden_layer_size,
                 num_layers = self.n_layers,
-                dropout=0.5,
+                dropout=dropout,
                 batch_first = True)
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(dropout)
         self.linear = nn.Linear(self.hidden_layer_size, output_size)
         #self.reset_hidden_cell()
 
