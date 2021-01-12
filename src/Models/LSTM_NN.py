@@ -13,7 +13,7 @@ import os.path
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class LSTM(nn.Module):
-    def __init__(self, data = None, hidden_layer_size = 60, n_lstm_layers = 1, seq_len = 3, dropout = 0.2):
+    def __init__(self, data = None, hidden_layer_size = 60, second_linear_size = 30, n_lstm_layers = 1, seq_len = 3, dropout = 0.2):
         super().__init__()
         ## Sizes of various things
         self.data = data
@@ -23,6 +23,7 @@ class LSTM(nn.Module):
         self.n_layers = n_lstm_layers
         self.seq_len = seq_len
         self.dropout = dropout
+        self.second_linear_size = second_linear_size
 
         ## layers
         self.lstm = nn.LSTM(
@@ -32,9 +33,12 @@ class LSTM(nn.Module):
                 dropout=dropout,
                 batch_first = True)
         self.dropout       = nn.Dropout(dropout)
-        self.linear_inter  = nn.Linear(self.hidden_layer_size, self.hidden_layer_size)
-        self.relu          = nn.ReLU()
-        self.linear        = nn.Linear(self.hidden_layer_size, output_size)
+        if self.second_linear_size > 0:
+            self.linear_inter  = nn.Linear(self.hidden_layer_size, self.second_linear_size)
+            self.relu          = nn.ReLU()
+            self.linear        = nn.Linear(self.second_linear_size, output_size)
+        else:
+            self.linear        = nn.Linear(self.hidden_layer_size, output_size)
         #self.reset_hidden_cell()
 
     def reset_hidden_cell(self, batch_size):
@@ -50,8 +54,9 @@ class LSTM(nn.Module):
         #x = x.view(batch_size,-1)
         x = x[:,-1,:] # This one takes only output from last lstm layer
         x = self.dropout(x)
-        x = self.linear_inter(x)
-        x = self.relu(x)
+        if self.second_linear_size > 0:
+            x = self.linear_inter(x)
+            x = self.relu(x)
         prob = torch.sigmoid(self.linear(x))
         return prob 
 
@@ -117,10 +122,18 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda
             #Produce prediction
             y_pred = model(x_tensor)
             #single_loss = loss_function(y_pred, torch.FloatTensor([y]).T)
+            if model.second_linear_size > 0:
+                regularise_params = torch.cat(
+                        (
+                            torch.reshape(list(model.parameters())[-2], (-1,)),
+                            torch.reshape(list(model.parameters())[-4], (-1,))
+                            ))
+            else:
+                regularise_params = list(model.parameters())[-2]
             single_loss = loss_function(y_pred, 
                     torch.FloatTensor([y]).to(device).T, 
                     torch.FloatTensor([weight]).to(device).T,
-                    lin_reg_lambda*(list(model.parameters())[-2]+list(model.parameters())[-4]))
+                    lin_reg_lambda*regularise_params)
             single_loss.backward()
             optimiser.step()
             for param in model.parameters():
