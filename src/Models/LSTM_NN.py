@@ -9,11 +9,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import os.path
+from collections import OrderedDict
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class LSTM(nn.Module):
-    def __init__(self, data = None, hidden_layer_size = 60, second_linear_size = 30, n_lstm_layers = 1, seq_len = 3, dropout = 0.2):
+    def __init__(self, data = None, hidden_layer_size = 60, linear_sizes = [30,15], n_lstm_layers = 1, seq_len = 3, dropout = 0.2):
         super().__init__()
         ## Sizes of various things
         self.data = data
@@ -23,8 +24,9 @@ class LSTM(nn.Module):
         self.n_layers = n_lstm_layers
         self.seq_len = seq_len
         self.dropout = dropout
-        self.second_linear_size = second_linear_size
-
+        self.linear_sizes = linear_sizes
+        
+        linear = OrderedDict()
         ## layers
         self.lstm = nn.LSTM(
                 input_size = n_features,
@@ -33,12 +35,12 @@ class LSTM(nn.Module):
                 dropout=dropout,
                 batch_first = True)
         self.dropout       = nn.Dropout(dropout)
-        if self.second_linear_size > 0:
-            self.linear_inter  = nn.Linear(self.hidden_layer_size, self.second_linear_size)
-            self.relu          = nn.ReLU()
-            self.linear        = nn.Linear(self.second_linear_size, output_size)
-        else:
-            self.linear        = nn.Linear(self.hidden_layer_size, output_size)
+        
+        layer_sizes = [hidden_layer_size] + linear_sizes + [output_size]
+        for l in range(len(layer_sizes)-1):
+            linear['linear'+str(l)] = nn.Linear(layer_sizes[l], layer_sizes[l+1])
+            if l != len(layer_sizes)-2: linear['relu'+str(l)]   = nn.ReLU()
+        self.linear = nn.Sequential(linear)
         #self.reset_hidden_cell()
 
     def reset_hidden_cell(self, batch_size):
@@ -54,11 +56,20 @@ class LSTM(nn.Module):
         #x = x.view(batch_size,-1)
         x = x[:,-1,:] # This one takes only output from last lstm layer
         x = self.dropout(x)
-        if self.second_linear_size > 0:
-            x = self.linear_inter(x)
-            x = self.relu(x)
-        prob = torch.sigmoid(self.linear(x))
+        x = self.linear(x)
+        prob = torch.sigmoid(x)
         return prob 
+
+    def get_linear_params(self):
+        params = torch.reshape(list(self.parameters())[-2], (-1,))
+        for i in range(len(self.linear_sizes)):
+            params = torch.cat(
+                    (
+                        params,
+                        torch.reshape(list(self.parameters())[-2*(1+i+1)], (-1,))
+                    )
+            )
+        return params
 
     def add_zeros_to_data(self):
         to_add = np.zeros((self.seq_len-1, self.data.train_x[0].size))
@@ -122,14 +133,7 @@ def train(model, lr=0.0001, epochs=10, batch_size=300, log_file=None, reg_lambda
             #Produce prediction
             y_pred = model(x_tensor)
             #single_loss = loss_function(y_pred, torch.FloatTensor([y]).T)
-            if model.second_linear_size > 0:
-                regularise_params = torch.cat(
-                        (
-                            torch.reshape(list(model.parameters())[-2], (-1,)),
-                            torch.reshape(list(model.parameters())[-4], (-1,))
-                            ))
-            else:
-                regularise_params = list(model.parameters())[-2]
+            regularise_params = model.get_linear_params()             
             single_loss = loss_function(y_pred, 
                     torch.FloatTensor([y]).to(device).T, 
                     torch.FloatTensor([weight]).to(device).T,
