@@ -36,10 +36,11 @@ class LSTM(nn.Module):
                 batch_first = True)
         self.dropout       = nn.Dropout(dropout)
         
-        layer_sizes = [hidden_layer_size] + linear_sizes + [output_size]
+        layer_sizes = [hidden_layer_size] + linear_sizes
         for l in range(len(layer_sizes)-1):
             linear['linear'+str(l)] = nn.Linear(layer_sizes[l], layer_sizes[l+1])
-            if l != len(layer_sizes)-2: linear['relu'+str(l)]   = nn.ReLU()
+            linear['relu'+str(l)]   = nn.ReLU()
+        linear['output']            = nn.Linear(layer_sizes[-1], 1, bias=False)
         self.linear = nn.Sequential(linear)
         #self.reset_hidden_cell()
 
