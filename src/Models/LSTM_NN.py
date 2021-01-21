@@ -74,7 +74,7 @@ class LSTM(nn.Module):
                 )
         else:
             params = torch.reshape(list(self.parameters())[-1-2*(len(self.linear_sizes))], (-1,))
-        print(params.size())
+
         return params
 
     def add_zeros_to_data(self):
