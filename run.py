@@ -18,10 +18,13 @@ del model
 ## Dataframe is provided 
 
 test_prediction = pd.read_csv('input/example_test.csv')
+# convert to what is given on kaggle
+test_prediction = test_prediction[['weight']+['feature_'+str(i) for i in range(130)]+['date']]
 model = torch.load('model')
 def predict():
     for i in range(len(test_prediction)):
-        df = test_prediction.iloc[[i],1:]
+        df = test_prediction.iloc[[i],:]
+        print(df) 
         #print(df)
         y = model.kaggle_predict(df)
         #print(y)

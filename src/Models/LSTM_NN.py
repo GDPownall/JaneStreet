@@ -14,7 +14,7 @@ from collections import OrderedDict
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class LSTM(nn.Module):
-    def __init__(self, data = None, hidden_layer_size = 60, linear_sizes = [30,15], n_lstm_layers = 1, seq_len = 3, dropout = 0.2, reg_first_layer_only = False):
+    def __init__(self, data = None, hidden_layer_size = 100, linear_sizes = [30,15], n_lstm_layers = 1, seq_len = 5, dropout = 0.2, reg_first_layer_only = False):
         super().__init__()
         ## Sizes of various things
         self.data = data
