@@ -25,7 +25,7 @@ def split_sequences(sequences, n_steps, limits = None):
     return np.array(X)
 
 class Data:
-    def __init__(self, df, train_full = False):
+    def __init__(self, df, train_full = False, ffill = True):
         '''
         Class for loading the data frame.
         Arguments:
@@ -33,6 +33,9 @@ class Data:
         '''
         self.df = df
         self.train_full = train_full
+        self.ffill = ffill
+        if ffill:
+            self.df.fillna(method='ffill',inplace=True)
         self.nans = {}
         if df.isnull().values.any():
             for col in [x for x in self.df.columns if 'feature' in x]:

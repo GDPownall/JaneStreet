@@ -18,6 +18,7 @@ class LSTM(nn.Module):
         super().__init__()
         ## Sizes of various things
         self.data = data
+        self.ffill = self.data.ffill
         self.hidden_layer_size = hidden_layer_size # number of hidden states
         n_features = data.n_features()
         output_size = 1
@@ -91,7 +92,9 @@ class LSTM(nn.Module):
 
     def kaggle_predict(self, row):
         row_vals = row.values[:,1:-1]
-        if np.isnan(row_vals.sum()):
+        if self.ffill:
+            row_vals = np.where(np.isnan(row_vals), self.predict_from[-1,:], row_vals)
+        elif np.isnan(row_vals.sum()):
             #print('================')
             #print(row_vals)
             #print(self.data_nans_np)
