@@ -74,3 +74,11 @@ Firstly, rather than converting the data into sequences immediately, the program
 NaN replacement in the kaggle competition reading is done through the numpy.where function, which was found to be faster than the pandas fillna function by two orders of magnitude. There is also functionality to transfer everything to a GPU.
 
 Even with the memory efficiency, this can take up large amounts of space on a personal computer, so it is recommended to run through Google Colab or similar. The colab notebook being used is saved in the lead directory of this repository.
+
+### Suggestions on Kaggle
+
+There have been a number of suggestions on the Kaggle forums which have not been implemented. 
+
+Firstly, significant improvement in the leaderboard score was found by using the data between 0.4 and 0.6 of the way through the training sample, and especially by removing data from the first 85 days. This has not been implemented as I believe this to be overtraining to the leaderboard test set.
+
+Secondly, one popular suggestion is to one-hot encode feature_0 as is it takes two discrete values, ie. it is a binary feature. I believe this to be already one-hot encoded, and that doing this would only serve to create an additional feature which is directly anticorrelated to the first. Any improvements seen is surely overfitting.
