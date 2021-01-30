@@ -51,9 +51,10 @@ class Data:
         '''
         Class method for loading directly from csv
         Arguments:
-            short: reduce the size of the data for testing purposes. Removes most of the rows and most of the features.
-            path:  path to input csv file.
-            rm_early: remove date < 85 (not for short)
+            short:          reduce the size of the data for testing purposes. Removes most of the rows and most of the features.
+            path:           path to input csv file.
+            use_datatable:  option to load data using the datatable module. Faster and more verbose than pandas, but not available on all systems.
+            rm_early:       remove date < 85 (not for short)
         '''
         if use_datatable: import datatable as dt
         else:             import pandas    as pd
@@ -69,7 +70,7 @@ class Data:
     @classmethod
     def for_kaggle_predict(cls, df, fill_nans):
         '''
-        Static method for just getting sequenced data from an input dataframe.
+        Method for just getting sequenced data from an input dataframe.
         Arguments:
             df: dataframe
             fill_nans: dictionary with value to fill nans for each column. Irrelevant if ffill was used in the model training.
