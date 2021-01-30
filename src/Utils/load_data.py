@@ -30,6 +30,8 @@ class Data:
         Class for loading the data frame.
         Arguments:
             df: dataframe
+            train_full: train on full dataset (ie. do not split into train/test)
+            ffill: forward fill nans, otherwise use median
         '''
         self.df = df
         self.train_full = train_full
@@ -70,7 +72,7 @@ class Data:
         Static method for just getting sequenced data from an input dataframe.
         Arguments:
             df: dataframe
-            fill_nans: dictionary with value to fill nans for each column
+            fill_nans: dictionary with value to fill nans for each column. Irrelevant if ffill was used in the model training.
         '''
         #for col in df.columns:
         #    if 'feature' not in col: continue

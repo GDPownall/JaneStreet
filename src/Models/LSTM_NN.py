@@ -15,6 +15,17 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class LSTM(nn.Module):
     def __init__(self, data = None, hidden_layer_size = 100, linear_sizes = [30,15], n_lstm_layers = 1, seq_len = 5, dropout = 0.2, reg_first_layer_only = False):
+        '''
+        Class for the LSTM model of this analysis. Overloads the pyTorch nn.Module class.
+
+        data:                   input data (must be an instance of the Data class in Utils/load_data.py)
+        hidden_layer_size:      size of the hidden layer in the lstm instance.
+        linear_sizes:           variable-length list of sizes of linear layers.
+        n_lstm_layers:          number of lstm layers (stacked). Second layer and beyond take size hidden_layer_size.
+        seq_len:                sequence length used for training and evaluation.
+        dropout:                dropout for lstm layers (between 0 and 1 as usual).
+        reg_first_layer_only:   boolean. If true, regularise only the parameters of the first linear layer.
+        '''
         super().__init__()
         ## Sizes of various things
         self.data = data
@@ -47,6 +58,9 @@ class LSTM(nn.Module):
         #self.reset_hidden_cell()
 
     def reset_hidden_cell(self, batch_size):
+        '''
+        Reset the hidden cell of the lstm layers.
+        '''
         self.hidden_cell = (torch.zeros(self.n_layers,batch_size,self.hidden_layer_size).to(device),
                             torch.zeros(self.n_layers,batch_size,self.hidden_layer_size).to(device))
 
@@ -64,6 +78,9 @@ class LSTM(nn.Module):
         return prob 
 
     def get_linear_params(self):
+        '''
+        Get the parameters of the linear layers of the model for regularisation purposes.
+        '''
         if not self.reg_first_layer_only:
             params = torch.reshape(list(self.parameters())[-1], (-1,))
             for i in range(len(self.linear_sizes)):
@@ -84,6 +101,10 @@ class LSTM(nn.Module):
         self.data.test_x  = np.vstack((to_add,self.data.test_x))
 
     def my_save(self,path):
+        '''
+        Function to save the model. 
+        Deletes the data (so that it isn't saved to an extra file) and stores whatever else is needed for evaluation, for example what to replace nans with.
+        '''
         self.data_nans      = self.data.nans
         self.data_nans_np   = np.array([self.data_nans[key] for key in self.data_nans.keys()])
         self.data           = None
@@ -91,6 +112,11 @@ class LSTM(nn.Module):
         torch.save(self, path)
 
     def kaggle_predict(self, row):
+        '''
+        Make a prediction given a single of a dataframe, as is required by Kaggle.
+        Stores this row and previous rows up to the sequence length, deletes rows going further back.
+        Fills the nans as previously defined.
+        '''
         row_vals = row.values[:,1:-1]
         if self.ffill:
             row_vals = np.where(np.isnan(row_vals), self.predict_from[-1,:], row_vals)
